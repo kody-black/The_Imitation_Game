@@ -1,0 +1,86 @@
+# coding=gbk
+
+# 生成模式（develop或者go）
+mode: go
+
+# 验证码生成设置
+captcha:
+  number: 2000  # 生成多少张验证码
+  length:
+    min: 4  # 验证码最小长度
+    max: 5  # 验证码最大长度
+
+# 图像设置
+image:
+  width: 160  # 图片宽度
+  height: 70  # 图片高度
+
+# 字体设置
+font:
+  size:
+    min: 70  # 字体最小大小
+    max: 70  # 字体最大大小
+  name: ofl/notosansmono/NotoSansMono[wdth,wght].ttf  # 字体名称
+  antialiased: True  # 是否抗锯齿
+  origin: False
+  underline_prob: 0  # 下划线概率
+  strong:
+    prob: 0.4  # 粗体概率
+    plus_prob: 1  # 粗体增强概率
+    value: 1  # 粗体增强值(单位等效于字体大小单位)
+  oblique_prob: 0.1  # 斜体概率
+
+# 字符串弯曲和旋转设置
+curve:
+  rate:
+    min: 0  # 字符串的弯曲程度（最小值）
+    max: 0  # 字符串的弯曲程度（最大值）
+  rotation:
+    min: 0  # 字符的旋转角度（最小值）
+    max: 0  # 字符的旋转角度（最大值）
+
+# 字符随机偏移和旋转设置
+random:
+  curve:
+    min: -30  # 字符随机垂直偏移量（最小值）
+    max: 30  # 字符随机垂直偏移量（最大值）
+  dis:
+    min: -35  # 字符随机水平偏移量（最小值）
+    max: 20  # 字符随机水平偏移量（最大值）
+  rotation:
+    min: -50  # 字符随机旋转角度（最小值）
+    max: 50  # 字符随机旋转角度（最大值）
+
+# 整体变换设置
+transform:
+  rotate: [0, 0]  # scale, shift 整体旋转
+  zoom: [0., 1]  # scale, shift 整体缩放比例
+  shear: [0, 0]  # scale, shift 整体错切角度
+  perspect: [0.0000, 0]  # scale, shift 整体视角
+  padding:
+    min: 0  # 上下左右的空白（最小值）
+    max: 10  # 上下左右的空白（最大值）
+
+# 扭曲设置
+distort:
+  p: 0  # 扭曲概率
+  grid_size: 7  # 扭曲算子大小
+  magnitude: 5  # 扭曲程度
+
+# 其他视觉效果设置
+visual:
+  waving: False  # 是否波形扭曲
+  line: False  # 是否有直线干扰线
+  dots: False  # 是否有噪声点
+  arc: False  # 是否有曲线干扰线
+  bg:
+    enabled: True  # 是否有背景
+    dir: bg/apple  # 背景图片路径
+    color: 'white'  # 背景颜色
+
+# 颜色设置
+color:
+  font: [0, 0, 0]  # 字体颜色
+
+# 字符类型设置
+char_type: 'mixU'  # 字符类型

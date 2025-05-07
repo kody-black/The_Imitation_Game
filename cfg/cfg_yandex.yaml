@@ -1,0 +1,66 @@
+# coding=gbk
+
+mode: develop # develop或者go
+captcha_number: 10  # 生成多少张验证码
+min_len: 6  # 验证码最小长度
+max_len: 8  # 验证码最大长度
+
+image_width: 200  # 图片宽度
+image_height: 60  # 图片高度
+font_size_min: 50  # 字体最小大小
+font_size_max: 50  # 字体最大大小
+font_name: more/elected-office.outline.ttf  # 字体名称
+font_antialiased: True  # 是否抗锯齿
+font_origin: False
+font_underline_prob: 0  # 下划线概率
+font_strong_prob: 0  # 粗体概率
+font_strong_plus_prob: 0  # 粗体增强概率
+font_strong_value: 0  # 粗体增强值(单位等效于字体大小单位)
+font_oblique_prob: 0  # 斜体概率
+
+# 字符串弯曲值为正时，整体呈U形，为负时整体呈n形（建议范围取-2到2以内）
+curve_rate_min: 0  # 字符串的弯曲程度（最小值）
+curve_rate_max: 0  # 字符串的弯曲程度（最大值）
+# 与curve_rate_min和curve_rate_max配合使用，用于控制字符串弯曲时字符伴随的旋转程度(建议为不超过curve_rate的五倍)
+rotation_rate_min: 0  # 字符的旋转角度（最小值）
+rotation_rate_max: 0  # 字符的旋转角度（最大值）
+
+# 偏移量表示随机偏移相邻字符的高度或宽度(单位等效于字符大小的单位)
+# 水平建议最小值不小于字体大小的-1/3
+random_curve_min: -1  # 字符随机垂直偏移量（最小值）
+random_curve_max: 1  # 字符随机垂直偏移量（最大值）
+random_dis_min: -1  # 字符随机水平偏移量（最小值）
+random_dis_max: -1  # 字符随机水平偏移量（最大值）
+random_rotation_min: 0  # 字符随机旋转角度（最小值）
+random_rotation_max: 0  # 字符随机旋转角度（最大值）
+
+rotate_param: [0, 0]  # scale, shift 整体旋转
+zoom_param: [0., 1]  # scale, shift 整体缩放比例
+shear_param: [0, 0]  # scale, shift 整体错切角度
+perspect_param: [0.0000, 0]  # scale, shift 整体视角
+padding_min: 10  # 上下左右的空白（最小值）
+padding_max: 10  # 上下左右的空白（最大值）
+
+distort_p: 0  # 扭曲概率
+grid_size: 7  # 扭曲算子大小
+magnitude: 5  # 扭曲程度
+
+is_waving: True  # 是否波形扭曲
+waving_orientation: 'horizontal'  # 波形扭曲方向
+waving_period: 0.5  # 波形扭曲周期
+waving_level: 2  # 波形扭曲幅度
+is_line: False  # 是否有直线干扰线
+is_dots: False  # 是否有噪声点
+is_arc: True  # 是否有曲线干扰线
+arc_num: 1  # 曲线干扰线数量
+arc_thickness: 1  # 曲线干扰线粗细
+is_bg: False  # 是否有背景
+bg_dir: ''  # 背景图片路径
+
+font_color: [[0, 0, 0]]  # 字体颜色
+background_color: [[255, 255, 255]]  # 背景颜色
+
+# number: 数字，letter: 字母，letterL: 小写字母，letterU：大写字母，mix: 数字和字母, mixL: 数字和小写字母, mixU: 数字和大写字母
+char_type: 'mix'  # 字符类型
+ex_char: '19ilt'  # 排除字符
+
