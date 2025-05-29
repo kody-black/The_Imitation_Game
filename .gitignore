@@ -5,3 +5,4 @@ test
 font
 font_old
 *.pyc
+*.yaml

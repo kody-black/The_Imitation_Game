@@ -1,7 +1,7 @@
 # coding=gbk
 
-mode: develop
-captcha_number: 20  # 生成多少张验证码
+mode: go
+captcha_number: 10000  # 生成多少张验证码
 min_len: 4  # 验证码最小长度
 max_len: 5  # 验证码最大长度
 
