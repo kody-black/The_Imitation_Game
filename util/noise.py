@@ -36,41 +36,73 @@ def create_lines(img):
 
 
 def create_arcs(img, thickness=2, num=1):
+    """
+    在图像上绘制正弦曲线干扰线（优化版）。
+    使用Numpy向量化操作替代Python循环，以提高性能。
+    """
     height, width = img.shape[:2]
+    if width == 0 or height == 0: return img
+    
     for _ in range(num):
-        x = np.arange(width)
+        # 生成 x 坐标
+        x_coords = np.arange(width)
+        
+        # 正弦波的随机参数
         amplitude = random.randint(0, height)
-        frequency = random.randint(width // 10, width)
-        y = (np.sin(x / frequency) + 1) * (amplitude / 2)
+        # 避免当宽度很小时除以零
+        frequency = random.randint(max(1, width // 10), width)
+        phase = random.uniform(0, 2 * np.pi)
+        
+        # 计算基础 y 坐标
+        y_base = (np.sin(x_coords / frequency * 2 * np.pi + phase) + 1) * (amplitude / 2)
 
-        for i in range(width):
-            for j in range(-thickness // 2, thickness // 2 + 1):
-                if 0 <= int(y[i]) + j < height:
-                    img[int(y[i]) + j, i] = 255
+        # 通过偏移基础y坐标来实现曲线的厚度
+        for offset in range(-thickness // 2, thickness // 2 + 1):
+            y_coords = (y_base + offset).astype(int)
+            
+            # 创建一个布尔掩码以选择在图像边界内的坐标
+            valid_mask = (y_coords >= 0) & (y_coords < height)
+            
+            # 使用掩码同时索引 x 和 y 坐标，并设置像素值
+            img[y_coords[valid_mask], x_coords[valid_mask]] = 255
+            
     return img
 
 
 def create_polynomial(img, thickness=2, num=1):
+    """
+    在图像上绘制多项式曲线干扰线（优化版）。
+    使用Numpy向量化操作替代Python循环，以提高性能。
+    """
     height, width = img.shape[:2]
+    if width == 0 or height == 0: return img
+
     for _ in range(num):
-        # Define the degree of the polynomial (from 2 to 5)
+        # 定义多项式的阶数
         degree = random.randint(2, 5)
-        # Generate random coefficients for the polynomial equation
-        coeffs = [random.uniform(-1, 1) for _ in range(degree + 1)]
-        # Define a vertical offset to move the curve up or down randomly
+        # 为多项式方程生成随机系数
+        coeffs = np.random.uniform(-1, 1, degree + 1)
+        # 定义一个随机的垂直偏移
         vertical_offset = random.uniform(-0.5 * height, 0.5 * height)
 
-        # Generate x values
-        x = np.linspace(0, width, num=width)
-        # Calculate y values using the polynomial equation
-        y = np.zeros_like(x)
-        for power, coeff in enumerate(coeffs):
-            y += coeff * (x / width) ** power
-        y = height / 2 + y * height / 4 + vertical_offset  # Scale and offset the curve
+        # 生成归一化的 x 值 [0, 1] 以获得更好的数值稳定性
+        x = np.linspace(0, 1, num=width)
+        
+        # 使用向量化多项式求值计算 y 值
+        y_base = np.polynomial.polynomial.polyval(x, coeffs)
+        # 缩放并偏移曲线以适应图像
+        y_base = height / 2 + y_base * height / 4 + vertical_offset
 
-        # Draw the curve on the image
-        for i in range(width):
-            for j in range(-thickness // 2, thickness // 2 + 1):
-                if 0 <= int(y[i]) + j < height:
-                    img[int(y[i]) + j, i] = 255
+        x_coords = np.arange(width)
+
+        # 通过偏移基础y坐标来实现曲线的厚度
+        for offset in range(-thickness // 2, thickness // 2 + 1):
+            y_coords = (y_base + offset).astype(int)
+            
+            # 创建一个布尔掩码以选择在图像边界内的坐标
+            valid_mask = (y_coords >= 0) & (y_coords < height)
+            
+            # 使用掩码同时索引 x 和 y 坐标，并设置像素值
+            img[y_coords[valid_mask], x_coords[valid_mask]] = 255
+            
     return img
