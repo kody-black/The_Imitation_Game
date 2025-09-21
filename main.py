@@ -41,12 +41,15 @@ def main():
     cfg, db = process_args()
     freetype.init()
 
-    chars = CHAR_TYPES[cfg["char_type"]]
-
-    # 剔除掉ex_char
-    if "ex_char" in cfg:
-        for ex_char in cfg["ex_char"]:
-            chars = chars.replace(ex_char, "")
+    # 如果有all_chars配置项，则使用它，否则使用char_type
+    if "all_chars" in cfg and len(cfg["all_chars"]) > 0:
+        chars = cfg["all_chars"]
+    else:
+        chars = CHAR_TYPES[cfg["char_type"]]
+        # 剔除掉ex_char
+        if "ex_char" in cfg:
+            for ex_char in cfg["ex_char"]:
+                chars = chars.replace(ex_char, "")
 
     font_name = "font/" + cfg["font_name"]
 

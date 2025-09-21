@@ -66,5 +66,6 @@ background_color: [[255, 255, 255]]  # 背景颜色
 font_color: [[255, 0, 0],[0, 255, 0],[0, 0, 255]]  # 字体颜色, 可以设置多个颜色, 随机选择
 
 # number: 数字，letter: 字母，letterL: 小写字母，letterU：大写字母，mix: 数字和字母, mixL: 数字和小写字母, mixU: 数字和大写字母
+all_chars: 'abcdefghijklmnopqrstuvwxyz'  # 自定义字符集, 如果设置了该项, 则忽略char_type和ex_char
 char_type: 'letterL'  # 字符类型
 ex_char: ''  # 排除字符

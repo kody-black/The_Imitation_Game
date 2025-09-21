@@ -61,6 +61,7 @@ font_color: [[0, 0, 0]]  # 字体颜色
 background_color: [[255, 255, 255]]  # 背景颜色
 
 # number: 数字，letter: 字母，letterL: 小写字母，letterU：大写字母，mix: 数字和字母, mixL: 数字和小写字母, mixU: 数字和大写字母
+all_chars: '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'  # 自定义字符集, 如果设置了该项, 则忽略char_type和ex_char
 char_type: 'mix'  # 字符类型
 ex_char: '19ilt'  # 排除字符
 
