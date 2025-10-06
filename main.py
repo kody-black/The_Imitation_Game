@@ -94,9 +94,9 @@ def main():
         if cfg["is_dots"]:
             resimg = create_dots(resimg)
         if cfg["is_line"]:
-            resimg = create_lines(resimg)
+            resimg = create_lines(resimg, num=cfg["line_num"], thickness=cfg["line_thickness"])
         if cfg["is_arc"]:
-            resimg = create_arcs(resimg, cfg["arc_thickness"], cfg["arc_num"])
+            resimg = create_arcs(resimg, thickness=cfg["arc_thickness"], num=cfg["arc_num"])
 
         bbs = get_bbs(char_surf_ls)
 
@@ -115,7 +115,6 @@ def main():
 
         img_pil = Image.fromarray(cv2.cvtColor(l_out, cv2.COLOR_BGR2RGB))
         resized_img_pil = img_pil.resize((resized_w, resized_h), Image.Resampling.LANCZOS)
-        # --- 修正拼写错误: COLOR_RGB_BGR -> COLOR_RGB2BGR ---
         resized_img_cv = cv2.cvtColor(np.array(resized_img_pil), cv2.COLOR_RGB2BGR)
 
         if len(cfg["background_color"]) > 0:
@@ -167,7 +166,7 @@ def main():
         # --- 保存文件 ---
         if cfg["mode"] == "develop":
             # 在开发模式下，使用计数器作为文件名以避免覆盖
-            filename = f"{generated_count}_{text}"
+            filename = f"{generated_count}"
         else:
             filename = text
 

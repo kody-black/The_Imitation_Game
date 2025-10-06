@@ -18,12 +18,12 @@ def create_dots(img):
     return image
 
 
-def create_lines(img):
+def create_lines(img, num=1, thickness=1):
     image = Image.fromarray(img)
     draw = Draw(image)
     w, h = image.size
-    width = random.randint(3, 7)
-    number = 1
+    width = thickness
+    number = num
     for _ in range(number):
         x1 = random.randint(0, w)
         y1 = random.randint(0, h)
@@ -35,7 +35,7 @@ def create_lines(img):
 
 
 
-def create_arcs(img, thickness=2, num=1):
+def create_arcs(img, thickness=1, num=1):
     """
     在图像上绘制正弦曲线干扰线（优化版）。
     使用Numpy向量化操作替代Python循环，以提高性能。
