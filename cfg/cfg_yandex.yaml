@@ -65,3 +65,5 @@ all_chars: '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'  # �
 char_type: 'mix'  # 字符类型
 ex_char: '19ilt'  # 排除字符
 
+double_layer: False  # 是否生成双层验证码，True时字符会分成上下两层
+

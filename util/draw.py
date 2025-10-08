@@ -20,6 +20,10 @@ def draw_text(text: str, font: freetype.Font, cfg: dict) -> tuple[np.ndarray, li
     :return: 返回一个包含绘制好的图像数组、字符边界框列表和字符边界轮廓列表的元组。
     """
 
+    # 检查是否启用双层模式
+    if cfg.get("double_layer", False):
+        return draw_double_layer_text(text, font, cfg)
+    
     # 设置字符方向曲线
     curve_center = random.randint(0, len(text) - 1)
     curve_rate = (
@@ -127,6 +131,182 @@ def draw_text(text: str, font: freetype.Font, cfg: dict) -> tuple[np.ndarray, li
         contours_ls.append(contours)
 
     return alpha_arr, bbs, contours_ls
+
+
+def draw_double_layer_text(text: str, font: freetype.Font, cfg: dict) -> tuple[np.ndarray, list, list, list, list]:
+    """
+    绘制双层验证码文本
+    
+    :param text: 要绘制的文本字符串
+    :param font: freetype.Font对象
+    :param cfg: 配置字典
+    :return: 返回一个包含绘制好的图像数组、字符边界框列表和字符边界轮廓列表的元组
+    """
+    text_len = len(text)
+    
+    # 平均分配字符到上下两层
+    if text_len == 1:
+        upper_chars = [text[0]]
+        lower_chars = []
+    elif text_len == 2:
+        upper_chars = [text[0]]
+        lower_chars = [text[1]]
+    else:
+        # 计算每层应该有的字符数量
+        base_count = text_len // 2
+        if text_len % 2 == 0:
+            # 偶数：上下两层各一半
+            upper_count = base_count
+            lower_count = base_count
+        else:
+            # 奇数：随机决定哪一层多一个字符
+            if random.choice([True, False]):
+                upper_count = base_count + 1
+                lower_count = base_count
+            else:
+                upper_count = base_count
+                lower_count = base_count + 1
+        
+        # 按原始顺序分配字符到各层
+        upper_chars = list(text[:upper_count])
+        lower_chars = list(text[upper_count:])
+    
+    # 合并字符列表，保持原始顺序用于后续处理
+    all_chars = upper_chars + lower_chars
+    char_layers = [0] * len(upper_chars) + [1] * len(lower_chars)  # 0表示上层，1表示下层
+    
+    # 设置字符方向曲线
+    curve_center = random.randint(0, len(all_chars) - 1)
+    curve_rate = (
+        random.random() * (cfg["curve_rate_max"] - cfg["curve_rate_min"])
+        + cfg["curve_rate_min"]
+    )
+    curve = [
+        curve_rate * (i - curve_center) * (i - curve_center) for i in range(len(all_chars))
+    ]
+
+    rotation_rate = (
+        random.random() * (cfg["rotation_rate_max"] - cfg["rotation_rate_min"])
+        + cfg["rotation_rate_min"]
+    )
+    rotation_rate = int(rotation_rate)
+    rots = [rotation_rate * (i - curve_center) for i in range(len(all_chars))]
+
+    # 单个字符的随机配置
+    rots = [
+        rots[i] + random.randint(cfg["random_rotation_min"], cfg["random_rotation_max"])
+        for i in range(len(all_chars))
+    ]
+    strong = [random.random() < cfg["font_strong_prob"] for i in range(len(all_chars))]
+    underline = [random.random() < cfg["font_underline_prob"] for i in range(len(all_chars))]
+    oblique = [random.random() < cfg["font_oblique_prob"] for i in range(len(all_chars))]
+    spacing_y = [
+        random.randint(cfg["random_curve_min"], cfg["random_curve_max"])
+        for i in range(len(all_chars))
+    ]
+    spacing_x = [
+        random.randint(cfg["random_dis_min"], cfg["random_dis_max"])
+        for i in range(len(all_chars))
+    ]
+
+    bbs = []
+    contours_ls = []
+
+    # 保证画布足够大
+    width = sum([font.get_rect(char).width for char in all_chars]) * 5
+    height = font.get_rect(''.join(all_chars)).height * 25  # 增加高度以容纳双层
+
+    # 计算上下层的y坐标
+    base_y = height // 2
+    char_height = font.get_rect(''.join(all_chars)).height
+    layer_spacing = char_height  # 层间距
+    upper_y_offset = -layer_spacing // 2  # 上层向上偏移
+    lower_y_offset = layer_spacing // 2   # 下层向下偏移
+
+    # 分别计算上下两层的起始x坐标，使它们居中对齐
+    upper_width = sum([font.get_rect(char).width for char in upper_chars])
+    lower_width = sum([font.get_rect(char).width for char in lower_chars])
+    
+    upper_start_x = (width - upper_width) // 2 if upper_chars else width // 2
+    lower_start_x = (width - lower_width) // 2 if lower_chars else width // 2
+
+    # 为每层维护独立的x坐标
+    upper_x = upper_start_x
+    lower_x = lower_start_x
+
+    for i, char in enumerate(all_chars):
+        surf = pygame.Surface(
+            (width, height), pygame.locals.SRCALPHA, 32
+        )  # 包含一个 alpha 通道的图层
+        font.strong = strong[i]
+        font.underline = underline[i]
+        font.oblique = oblique[i]
+        rotation = rots[i]
+        
+        # 根据字符所在层设置坐标
+        if char_layers[i] == 0:  # 上层
+            now_x = upper_x
+            now_y = base_y + upper_y_offset
+        else:  # 下层
+            now_x = lower_x
+            now_y = base_y + lower_y_offset
+            
+        rect = font.render_to(surf, (now_x, now_y), char, rotation=rotation)
+
+        # 如果决定进一步加粗，将字符绘制多次，每次稍微偏移一点
+        strong_value = cfg["font_strong_value"]
+        if font.strong and np.random.rand() < cfg["font_strong_plus_prob"]:
+            shift_x = -strong_value
+            while shift_x <= strong_value:
+                shift_y = -strong_value
+                while shift_y <= strong_value:
+                    font.render_to(
+                        surf,
+                        (now_x + shift_x, now_y + shift_y),
+                        char,
+                        rotation=rotation,
+                    )
+                    shift_y += 1
+                shift_x += 1
+            bbs.append(
+                [
+                    now_x - strong_value,
+                    now_y - strong_value,
+                    rect.width + 2 * strong_value,
+                    rect.height + 2 * strong_value,
+                ]
+            )
+        else:
+            bbs.append([now_x, now_y, rect.width, rect.height])
+
+        # 更新对应层的x坐标
+        if char_layers[i] == 0:  # 上层
+            upper_x += rect.width + spacing_x.pop(0)
+        else:  # 下层
+            lower_x += rect.width + spacing_x.pop(0)
+        
+        # 应用曲线和随机偏移（仅影响y坐标）
+        if i <= curve_center:
+            now_y += curve[i]
+        else:
+            now_y -= curve[i]
+        now_y += spacing_y.pop(0)
+
+        alpha_surf = pygame.surfarray.pixels_alpha(surf)
+        if i == 0:
+            alpha_arr = alpha_surf
+        else:
+            alpha_arr = np.clip(
+                alpha_arr.astype(np.int64) + alpha_surf.astype(np.int64), 0, 255
+            ).astype(np.uint8)
+
+        contours, _ = cv2.findContours(
+            alpha_surf, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+        )
+        contours = np.concatenate(contours, axis=0)
+        contours_ls.append(contours)
+
+    return alpha_arr, bbs, contours_ls, upper_chars, lower_chars
 
 
 def cut_text(alpha_arr, bbs, contours_ls):

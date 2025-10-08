@@ -53,6 +53,17 @@ def main():
 
     font_name = "font/" + cfg["font_name"]
 
+    # 初始化Augmentor数据管道用于扭曲效果
+    surf_augmentor = Augmentor.DataPipeline(None)
+    # 扭曲
+    if cfg["distort_p"] != 0:
+        surf_augmentor.random_distortion(
+            probability=cfg["distort_p"],
+            grid_width=cfg["grid_size"],
+            grid_height=cfg["grid_size"],
+            magnitude=cfg["magnitude"],
+        )
+
     # --- 使用while循环和set来确保生成足量的唯一验证码 ---
     target_count = cfg["captcha_number"]
     generated_texts = set()
@@ -75,11 +86,19 @@ def main():
             
         font = get_font(font_name, cfg)
         
-        alpha_arr, bbs, char_surf_ls = draw_text(text, font, cfg)
+        draw_result = draw_text(text, font, cfg)
+        if cfg.get("double_layer", False):
+            alpha_arr, bbs, char_surf_ls, upper_chars, lower_chars = draw_result
+        else:
+            alpha_arr, bbs, char_surf_ls = draw_result
         alpha_arr, char_surf_ls = cut_text(alpha_arr, bbs, char_surf_ls)
         resimg = alpha_arr.swapaxes(0, 1)
 
         resimg, char_surf_ls = perspective(resimg, char_surf_ls, cfg)
+
+        # 应用扭曲效果
+        if cfg["distort_p"] != 0:
+            resimg, char_surf_ls = random_distortion(resimg, char_surf_ls, surf_augmentor)
 
         if cfg["is_waving"]:
             resimg, char_surf_ls = waving(
@@ -168,7 +187,13 @@ def main():
             # 在开发模式下，使用计数器作为文件名以避免覆盖
             filename = f"{generated_count}"
         else:
-            filename = text
+            # 在go模式下，如果是双层验证码，使用上层-下层格式
+            if cfg.get("double_layer", False):
+                upper_text = ''.join(upper_chars)
+                lower_text = ''.join(lower_chars)
+                filename = f"{upper_text}-{lower_text}"
+            else:
+                filename = text
 
         cv2.imwrite(f"{img_output_dir}/{filename}.png", l_out)
         with open(f"{obj_output_dir}/{filename}.pkl", "wb") as f:
